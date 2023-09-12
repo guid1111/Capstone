@@ -1,0 +1,19 @@
+version: 2.1
+
+jobs:
+  build-and-test-option-pricer:
+    docker:
+      - image: mcr.microsoft.com/dotnet/sdk:6.0
+    steps:      
+      - checkout:
+          path: ~/Capstone      
+      - run:          
+          working_directory: ~/Capstone
+          name: Build and Run tests
+          command: |                                    
+            dotnet test Capstone.sln --configuration Release
+
+workflows:
+  default:
+    jobs:  
+      - build-and-test-option-pricer
