@@ -1,4 +1,4 @@
-<<Insert CircleCI status Badge>>
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/guid1111/Capstone/tree/master.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/guid1111/Capstone/tree/master)
 
 # Capstone
 Demonstration project to showcase devops practices centred around CICD, Amazon Web Services, Docker and Kubernates

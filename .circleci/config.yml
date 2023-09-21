@@ -1,5 +1,9 @@
 version: 2.1
 
+orbs:
+    aws-cli: circleci/aws-cli@4.0
+    aws-ecr: circleci/aws-ecr@8.1.3
+
 jobs:
   build-and-test-option-pricer:
     docker:
@@ -12,8 +16,23 @@ jobs:
           name: Build and Run tests
           command: |                                    
             dotnet test Capstone.sln --configuration Release
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - project/OptionPricer
+      
+
+
+
+#####Id say its a context issue that you have - try to use a context with the keys in there...(Set up some more keys!)
 
 workflows:
   default:
     jobs:  
       - build-and-test-option-pricer
+      - aws-ecr/build-and-push-image:                    
+          context: aws-dev
+          dockerfile: Dockerfile
+          path: OptionPricer
+          repo: capstone
+          tag: "$CIRCLE_SHA1"          

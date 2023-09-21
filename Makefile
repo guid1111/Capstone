@@ -35,6 +35,8 @@ docker_publish:
 
 docker_update:
 	#Rolling update given existing deployment?
+	#aws emr describe-cluster --cluster-id option-pricer-cluster
+	# aws emr list-clusters
 	kubectl set image deployments/<deployment> <deployment>=guid1111/optionpricer=guid1111/optionpricer:v2
 
 kubernetes_run:
