@@ -16,12 +16,6 @@ jobs:
           name: Build and Run tests
           command: |                                    
             dotnet test Capstone.sln --configuration Release
-      - persist_to_workspace:
-          root: ~/
-          paths:
-            - project/OptionPricer
-      
-
 
 
 #####Id say its a context issue that you have - try to use a context with the keys in there...(Set up some more keys!)
@@ -32,7 +26,7 @@ workflows:
       - build-and-test-option-pricer
       - aws-ecr/build-and-push-image:                    
           context: aws-dev
-          dockerfile: Dockerfile
+          dockerfile: qDockerfile
           path: OptionPricer
           repo: capstone
           tag: "$CIRCLE_SHA1"          
