@@ -26,7 +26,7 @@ workflows:
       - build-and-test-option-pricer
       - aws-ecr/build-and-push-image:                    
           context: aws-dev
-          dockerfile: qDockerfile
+          dockerfile: Dockerfile
           path: OptionPricer
           repo: capstone
           tag: "$CIRCLE_SHA1"          
