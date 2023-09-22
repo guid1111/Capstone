@@ -1,0 +1,339 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "EKS nodes (AMI family: AmazonLinux2, SSH access: false, private networking: false) [created and managed by eksctl]",
+    "Mappings": {
+      "ServicePrincipalPartitionMap": {
+        "aws": {
+          "EC2": "ec2.amazonaws.com",
+          "EKS": "eks.amazonaws.com",
+          "EKSFargatePods": "eks-fargate-pods.amazonaws.com"
+        },
+        "aws-cn": {
+          "EC2": "ec2.amazonaws.com.cn",
+          "EKS": "eks.amazonaws.com",
+          "EKSFargatePods": "eks-fargate-pods.amazonaws.com"
+        },
+        "aws-iso": {
+          "EC2": "ec2.c2s.ic.gov",
+          "EKS": "eks.amazonaws.com",
+          "EKSFargatePods": "eks-fargate-pods.amazonaws.com"
+        },
+        "aws-iso-b": {
+          "EC2": "ec2.sc2s.sgov.gov",
+          "EKS": "eks.amazonaws.com",
+          "EKSFargatePods": "eks-fargate-pods.amazonaws.com"
+        },
+        "aws-us-gov": {
+          "EC2": "ec2.amazonaws.com",
+          "EKS": "eks.amazonaws.com",
+          "EKSFargatePods": "eks-fargate-pods.amazonaws.com"
+        }
+      }
+    },
+    "Resources": {
+      "EgressInterCluster": {
+        "Type": "AWS::EC2::SecurityGroupEgress",
+        "Properties": {
+          "Description": "Allow control plane to communicate with worker nodes in group ng-1 (kubelet and workload TCP ports)",
+          "DestinationSecurityGroupId": {
+            "Ref": "SG"
+          },
+          "FromPort": 1025,
+          "GroupId": {
+            "Fn::ImportValue": "eksctl-option-pricer-cluster-cluster::SecurityGroup"
+          },
+          "IpProtocol": "tcp",
+          "ToPort": 65535
+        }
+      },
+      "EgressInterClusterAPI": {
+        "Type": "AWS::EC2::SecurityGroupEgress",
+        "Properties": {
+          "Description": "Allow control plane to communicate with worker nodes in group ng-1 (workloads using HTTPS port, commonly used with extension API servers)",
+          "DestinationSecurityGroupId": {
+            "Ref": "SG"
+          },
+          "FromPort": 443,
+          "GroupId": {
+            "Fn::ImportValue": "eksctl-option-pricer-cluster-cluster::SecurityGroup"
+          },
+          "IpProtocol": "tcp",
+          "ToPort": 443
+        }
+      },
+      "IngressInterClusterCP": {
+        "Type": "AWS::EC2::SecurityGroupIngress",
+        "Properties": {
+          "Description": "Allow control plane to receive API requests from worker nodes in group ng-1",
+          "FromPort": 443,
+          "GroupId": {
+            "Fn::ImportValue": "eksctl-option-pricer-cluster-cluster::SecurityGroup"
+          },
+          "IpProtocol": "tcp",
+          "SourceSecurityGroupId": {
+            "Ref": "SG"
+          },
+          "ToPort": 443
+        }
+      },
+      "NodeGroup": {
+        "Type": "AWS::AutoScaling::AutoScalingGroup",
+        "Properties": {
+          "DesiredCapacity": "2",
+          "LaunchTemplate": {
+            "LaunchTemplateName": {
+              "Fn::Sub": "${AWS::StackName}"
+            },
+            "Version": {
+              "Fn::GetAtt": [
+                "NodeGroupLaunchTemplate",
+                "LatestVersionNumber"
+              ]
+            }
+          },
+          "MaxSize": "2",
+          "MinSize": "2",
+          "Tags": [
+            {
+              "Key": "Name",
+              "PropagateAtLaunch": "true",
+              "Value": "option-pricer-cluster-ng-1-Node"
+            },
+            {
+              "Key": "kubernetes.io/cluster/option-pricer-cluster",
+              "PropagateAtLaunch": "true",
+              "Value": "owned"
+            }
+          ],
+          "VPCZoneIdentifier": [
+            "subnet-0e017ed5b2c5fcfe1",
+            "subnet-069a91ac0b5846bc7"
+          ]
+        },
+        "UpdatePolicy": {
+          "AutoScalingRollingUpdate": {}
+        }
+      },
+      "NodeGroupLaunchTemplate": {
+        "Type": "AWS::EC2::LaunchTemplate",
+        "Properties": {
+          "LaunchTemplateData": {
+            "BlockDeviceMappings": [
+              {
+                "DeviceName": "/dev/xvda",
+                "Ebs": {
+                  "Encrypted": false,
+                  "Iops": 3000,
+                  "Throughput": 125,
+                  "VolumeSize": 80,
+                  "VolumeType": "gp3"
+                }
+              }
+            ],
+            "IamInstanceProfile": {
+              "Arn": {
+                "Fn::GetAtt": [
+                  "NodeInstanceProfile",
+                  "Arn"
+                ]
+              }
+            },
+            "ImageId": "ami-02759925ad596a5f9",
+            "InstanceType": "t3.micro",
+            "MetadataOptions": {
+              "HttpPutResponseHopLimit": 2,
+              "HttpTokens": "required"
+            },
+            "NetworkInterfaces": [
+              {
+                "DeviceIndex": 0,
+                "Groups": [
+                  {
+                    "Fn::ImportValue": "eksctl-option-pricer-cluster-cluster::SharedNodeSecurityGroup"
+                  },
+                  {
+                    "Ref": "SG"
+                  }
+                ],
+                "NetworkCardIndex": 0
+              }
+            ],
+            "TagSpecifications": [
+              {
+                "ResourceType": "instance",
+                "Tags": [
+                  {
+                    "Key": "Name",
+                    "Value": "option-pricer-cluster-ng-1-Node"
+                  }
+                ]
+              },
+              {
+                "ResourceType": "volume",
+                "Tags": [
+                  {
+                    "Key": "Name",
+                    "Value": "option-pricer-cluster-ng-1-Node"
+                  }
+                ]
+              },
+              {
+                "ResourceType": "network-interface",
+                "Tags": [
+                  {
+                    "Key": "Name",
+                    "Value": "option-pricer-cluster-ng-1-Node"
+                  }
+                ]
+              }
+            ],
+            "UserData": "H4sIAAAAAAAA/7xYf3PaOpf+P59CSztvbve9BhtDepuZ7CxgOcFgE8uSDe52MsJSwVj+cW0RCN189x1DSKHN7ezd2Xn/obX0PEfn6Bw/5zjvIpGvmRLl2dd4cVHQKKELXl2DbC3ERbnOopRdXyhAAa1HWrZEPG/tCa0qKuNCVi2eVJEUrXmey0qWtGhS0W5Wy79FWXJR8LJmbcpY8oevseBVfWqUZ5Jn8hpcfnu+vAAg32S8vAZlnsvr+ucCgILK5TVocRkd7SbrORdcKnwrS9pcVXlWw3iZxlUV51l1DRrqVafTOLX/38oFAAD0rzoPgzHxMEQPg97N2FPl2NMGiDALx30D+RbxSGi5qknQfk+Vg0SzPIIGPnQMNyBPoWrqHrH6oSqsALI71/fjEFtXI1XoyDRDL5GPQSJyljoT1zdNDC3kTtmtD32CiWUiFW59QkbudOl4bbjzU0EDWGiBWHrzW+fKDfxbtut38bToO0T705suHZ5oV9hH+YyEun1XODyBGvZRyaF2haeF498ul5hYPu8VJk9Mz03ZxE+sPvaRMZ+62yDQAh5Y0l/1aQA1PWwzkxKtb0NmEN28I6qIbRUhRKw+8f2+i5HlJkh3pywLVX88SMzHOmZC7I6vii3So+3kjoUIC91OfctvmyY2lu48Y6EdFJ6jLjHRmU8zNvKwaSFs3rpa/kRNZtFsubSNWReTaOQkqIqgdTfSnKeZHrbRbbSNtCKb7dDTfMVyuvMrZxrq3PDHOAgd7Pf0ucYy+7YIbOh0QtW/ncOZNmt3qwnuxzwTT9gtrJnmO5HvdgPibynU5CxhhJuhN4GO7Qq/wFnooqkzZDtzaxP5GBpOGayW0iVsNA8sEfk93fVFQXdQn++cW7JC9iDdCmosup5hFvM7h0Qrdj/TkUqNxYav2C4y+hZfuepkykIKPw3mqU9RsLxCfjGxs94jXqE8MkybmdbGwSGeG0wj097IbqMQYfuR3BV/hoHfHquFDO+iDZuGbaLC0muL1LtVn2ba0rPTrTeBYskSy/L8ZDPxqpJAx4uwUO2puA2hQym2OswtwpAUsQ3FONTMe59sdX8HS4ahTrX+et52VrNdf+0GzHETs4/axdSH1gwTqO7rM0CQqf5grDOESF3vzgZB0x0kVoZFOCSJNnCDWQcRi7gE9QlZPGIy3By5oWZO3cTyuCgyn0jdM/0dTi3pqJ0npjsDO+iqjjbs+ll45fqz0aFelx4iPqSJ6YRttolSNPXS7WqO/SqELODJm/VqMO1YryZyp/aGm9Y69MU02hRrrPe7/i1sI8PUKRyqwd0Sz6ZoRQRKHGzZc11sQ00YI1UbYbIlMyFUnBYDB7KxD1Wd3rmdaIewl2zpfOoPw5UIBmKxIZlZzYJu2067M4/IDVuZ8Uw1N2Hw6W6CmUanfYw19sSFeUV3IfZ2Q80zxZObdjchNju+bg1sXVQoE+uw/QkHyWzEdGE7u+WVZwh/rLONZy6d+a6vB1NTZQky6S2rXOEYto+skHSf/MAynVWYe0I4TqJtcbC8sjPfw3AL8S50kYoM1CtcqiIT6ZbmxRLO1IJ6GXOdBBmztPOE7vzQ1pdLj1i6Q7ZyEnwazdpyZ09nGxoUa7ZbdCdTu23DAjtaqJGV5brpYjtIHIulMnV9+IjUPzojFQ1mqb+j02WH7BIVmVHHFuaYwU93CHZUqs1UJysMbIa2rf7RYbulP1LNMdHZbhZ8ymng5GH8x2hCkBmZDnKSpM2ISAfxQYMR6cIhdEwikIUSYbg+Mg/arY72uu5MDPgw7vXh2LuholjS5qFXNOO8leWML8p8XSgZTflNtlC033/ERGJdSV4eEHkh4zxTijKOeKm8bH0/BveGDvZu9gvHXmI43o2mNjVVbda/h72JU0MhekDEwUMb3tTdiMYZL9kZ2enZ8BeH9u6HDx5EPkQPBI1vllIW1XWrpX3sah/Nfv9jX4Pw4x9ap2sM4GAAO0ZPH5iG2VyUH5vrSuG0kopWx9qkKd3lGd1UzShP/2a3bfLs8X/RZvcev/u31jzOWnNaLS/2CxWXQMkBL0u+jeXpUhEX/CuNxelalq+zissXar4uI/5/mDT2bB4tc9A4oK5Buc6yOFu8hved19ijf15vVkvQeP/tNFPPDfBfezQAikKLuOLlIy8VnrEijzNZw88zdkaYX3WOyVUiWoPPR5IzMMuqV3BcnDpiON4Z8mwkUmi5qGr0iPThGOIHOMWo99BDt+ek13JUynUm45TvT/ixak8o779Bp9cfw4fxZNAbP0wIvp94+PqfisIzOhdcEXlEhZKvZZFX+5t4C//ceD6xeIxoaNR2XqNlp9EOjefG88VbGU15uagzuq54CQ6vUAXiTObgeCOHuXc/JR6SXKcVXJYpUL6C99+wff9QX9PDYOKYz5cATod4D1v9CZQKXDY/q1/Av4PmZ+3L5emV1vDh7XPj52t+3fmPeu/c/sGD9PGNnbeMv7wBT5XkaSQFYJSneaaUXOSUvVXfvJK0lPWFvBZEUjV+sPKCOkLesMPyjDd+qQ9/71PhJ9n42O3+i2TjbSED70D9CQLqrxHJMzB/Aq9OF7w8mHgHSMXB0Da8xzaQOVhwCVIuKaOS7gF4MoLOTeP9b9G6FEBRqljwTAJlCu4JBsodaEwVuqkUHrWVI1GRecIzRUqhVDzKM1ZdgytVbYBa1mtVv/rUbHc7zZd/W4JKXskWLeLWnvnhkM2v6yyqi7126uFo+7cP4NvLe/WDR79w5Rq838fRAI1fu1DTlJrXeq8dnHi+eKs/vaF/b316vaF8e9jQ8XDPGcCHoVFf7Wl8IM4qSbOIKzH78AN6PDThYDYYw78mifgrV6KnSPAX8mnzPtfWa+XFm9OG33j/7eTxFWL3pg/3E2O/f/z/Of9lLjnyD4/Pv9dzyd6pvU8377/9HMzzT4PKyRWcMmqFPGTjqCG12t/81lCUwzF0zkV1c+5B48Oe8fkzUDJwHt1zA3z5Av7xjzNz/9zbK/ki3mv0JpZLpW4g8tXwkfzh5QVSlJRulSJnFaAVoGAwHgJaLtZpXZVxBRgvSh5RydnvQC7jql6jYJOXCS3zdcZA3ZcE2PDvSFCtiyIvJfialyCl2/ucVfe8dHLGz6M55uIXoRyduzlFfzi7xu+t8+ZEoOvnz//55XjnZ4PcT+PCmb2DtN9c7oWpVqQy45JXR3FqvdG2Lt9w6MzMX/5Z5MA8azQ3ly2ZFmfHnEB/HlnfmgiuFZZHCS/ZcwO8A4x/pWtxyAcVbbBaVxLEGYhoxX8HWS7r5szqlfV8ncn1/0df+T7lvd1a/icAAP///jVpMPQSAAA="
+          },
+          "LaunchTemplateName": {
+            "Fn::Sub": "${AWS::StackName}"
+          }
+        }
+      },
+      "NodeInstanceProfile": {
+        "Type": "AWS::IAM::InstanceProfile",
+        "Properties": {
+          "Path": "/",
+          "Roles": [
+            {
+              "Ref": "NodeInstanceRole"
+            }
+          ]
+        }
+      },
+      "NodeInstanceRole": {
+        "Type": "AWS::IAM::Role",
+        "Properties": {
+          "AssumeRolePolicyDocument": {
+            "Statement": [
+              {
+                "Action": [
+                  "sts:AssumeRole"
+                ],
+                "Effect": "Allow",
+                "Principal": {
+                  "Service": [
+                    {
+                      "Fn::FindInMap": [
+                        "ServicePrincipalPartitionMap",
+                        {
+                          "Ref": "AWS::Partition"
+                        },
+                        "EC2"
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "Version": "2012-10-17"
+          },
+          "ManagedPolicyArns": [
+            {
+              "Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+            },
+            {
+              "Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/AmazonEKSWorkerNodePolicy"
+            },
+            {
+              "Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/AmazonEKS_CNI_Policy"
+            },
+            {
+              "Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/AmazonSSMManagedInstanceCore"
+            }
+          ],
+          "Path": "/",
+          "Tags": [
+            {
+              "Key": "Name",
+              "Value": {
+                "Fn::Sub": "${AWS::StackName}/NodeInstanceRole"
+              }
+            }
+          ]
+        }
+      },
+      "SG": {
+        "Type": "AWS::EC2::SecurityGroup",
+        "Properties": {
+          "GroupDescription": "Communication between the control plane and worker nodes in group ng-1",
+          "SecurityGroupIngress": [
+            {
+              "Description": "[IngressInterCluster] Allow worker nodes in group ng-1 to communicate with control plane (kubelet and workload TCP ports)",
+              "FromPort": 1025,
+              "IpProtocol": "tcp",
+              "SourceSecurityGroupId": {
+                "Fn::ImportValue": "eksctl-option-pricer-cluster-cluster::SecurityGroup"
+              },
+              "ToPort": 65535
+            },
+            {
+              "Description": "[IngressInterClusterAPI] Allow worker nodes in group ng-1 to communicate with control plane (workloads using HTTPS port, commonly used with extension API servers)",
+              "FromPort": 443,
+              "IpProtocol": "tcp",
+              "SourceSecurityGroupId": {
+                "Fn::ImportValue": "eksctl-option-pricer-cluster-cluster::SecurityGroup"
+              },
+              "ToPort": 443
+            }
+          ],
+          "Tags": [
+            {
+              "Key": "kubernetes.io/cluster/option-pricer-cluster",
+              "Value": "owned"
+            },
+            {
+              "Key": "Name",
+              "Value": {
+                "Fn::Sub": "${AWS::StackName}/SG"
+              }
+            }
+          ],
+          "VpcId": {
+            "Fn::ImportValue": "eksctl-option-pricer-cluster-cluster::VPC"
+          }
+        }
+      }
+    },
+    "Outputs": {
+      "FeatureLocalSecurityGroup": {
+        "Value": true
+      },
+      "FeaturePrivateNetworking": {
+        "Value": false
+      },
+      "FeatureSharedSecurityGroup": {
+        "Value": true
+      },
+      "InstanceProfileARN": {
+        "Value": {
+          "Fn::GetAtt": [
+            "NodeInstanceProfile",
+            "Arn"
+          ]
+        },
+        "Export": {
+          "Name": {
+            "Fn::Sub": "${AWS::StackName}::InstanceProfileARN"
+          }
+        }
+      },
+      "InstanceRoleARN": {
+        "Value": {
+          "Fn::GetAtt": [
+            "NodeInstanceRole",
+            "Arn"
+          ]
+        },
+        "Export": {
+          "Name": {
+            "Fn::Sub": "${AWS::StackName}::InstanceRoleARN"
+          }
+        }
+      }
+    }
+  }

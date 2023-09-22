@@ -18,12 +18,10 @@ lint:
 	# This is linter for Dockerfiles
 	hadolint Dockerfile	
 
-deploy:
-	#eksctl commands only used for create/delete a K8 cluster in AWS.  Once its created use kubctl commands.
-	eksctl create cluster -f eksclt_cluster_config.yml
+	
 
 destroy_environment:
-	eksclt delete cluster -f eksclt_cluster_config.yml -disable-nodegroup-eviction
+	eksclt delete cluster -f eksctl_cluster_config.yml -disable-nodegroup-eviction
 
 docker_build:
 	cd OptionPricer
@@ -42,6 +40,13 @@ docker_update:
 kubernetes_run:
 	kubectl run capstonedeployment --image=guid1111/optionpricer
 
+
+create_cluster:
+	eksctl create cluster -f eksctl_cluster_config.yml
+
+deploy_app_to_cluster:
+	kutctl apply -f deployment-manifest.yml
+	kubctl apply -f service-manifest.yml
 
 all: install lint release_build_and_lint test
 

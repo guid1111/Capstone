@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: option-pricer-app-service
+  labels:
+    app: option-pricer-app
+spec:
+  ports:
+  - port: 80
+    targetPort: 8000
+  selector:
+    app: option-pricer-app
+  type: LoadBalancer

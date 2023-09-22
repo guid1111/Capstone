@@ -1,0 +1,23 @@
+# Application deployment details 
+# Label pods with app name so that we can refer to this label in the service manifest.
+# Container will listen on port 8000
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: option-pricer-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: option-pricer-app
+  template:
+    metadata:
+      labels:
+        app: option-pricer-app
+    spec:
+      containers:
+        - name: my-app-container
+          image: IMAGE_TOKEN
+          ports:
+          - name: http
+            containerPort: 8000

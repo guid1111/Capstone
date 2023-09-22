@@ -1,0 +1,14 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: option-pricer
+spec:
+  template:
+    metadata:
+      name: option-pricer-pod
+    spec:
+      containers:
+      - name: option-pricer
+        image: guid1111/optionpricer
+        imagePullPolicy: Never
+      restartPolicy: Never
