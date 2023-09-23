@@ -33,7 +33,9 @@ jobs:
     #        - run:
      #           command: echo "conditional"
 
-    steps:     
+    steps:  
+      - checkout:
+          path: ~/         
       - run: yum install -y tar gzip            
       - run:
           name: Install the eksctl tool
@@ -53,8 +55,6 @@ jobs:
             $SUDO mv eksctl_download/eksctl /usr/local/bin/
             rmdir eksctl_download
 
-      # - checkout:
-      #     path: ~/
       
       # - run:
       #     name: install jq
