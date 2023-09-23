@@ -34,6 +34,7 @@ jobs:
      #           command: echo "conditional"
 
     steps:     
+      - run: yum install -y tar gzip            
       - run:
           name: Install the eksctl tool
           command: |
