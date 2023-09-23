@@ -33,8 +33,14 @@ jobs:
       #May need to do this:
       #command:|
       #aws eks --region ${AWS_DEFAULT_REGION} update-kubeconfig --name ${CLUSTER_NAME}
+      - k8s/install-kubectl
       - run:           
           name: Deploy cluster if deploy cluster if required
+          ##EKS NOT FOUND
+          # MAybe just use this:
+          #https://circleci.com/developer/orbs/orb/circleci/aws-eks
+          #you can pass config file...
+          #OR move install kutcl command above create cluster - try this first!!
           command: |
             DEPLOYED_CLUSTER=$(aws eks list-clusters | grep option-pricer-cluster || true)
             if [ "$DEPLOYED_CLUSTER" != "" ]; then
@@ -42,7 +48,7 @@ jobs:
             else
               eksctl create cluster -f eksctl_cluster_config.yml
             fi
-      - k8s/install-kubectl
+      
       - run:
           name: Deploy deploy-application
           command: |
