@@ -90,7 +90,7 @@ jobs:
             #TODO - need to get the name / tag of the container right...
             cd ~/project
             aws eks --region us-east-1 update-kubeconfig --name option-pricer-cluster
-            sed -i 's/IMAGE_TOKEN/${CIRCLE_SHA1}/g' deployment-manifest.yml
+            sed -i 's/IMAGE_TOKEN/'"${CIRCLE_SHA1}"'/g' deployment-manifest.yml
             kubectl apply -f deployment-manifest.yml
             kubectl apply -f service-manifest.yml
       
