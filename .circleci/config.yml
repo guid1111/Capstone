@@ -74,10 +74,18 @@ jobs:
               #DEPLOYED=1
             else
               echo "Cluster is not deployed."              
-              eksctl
+              #eksctl
               #DEPLOYED=0
-              #eksctl create cluster -f eksctl_cluster_config.yml
+              eksctl create cluster -f eksctl_cluster_config.yml
             fi
+
+      - run:
+          name: Deploy deploy-application
+          command: |
+            #TODO - need to get the name / tag of the container right...
+            sed -i 's/IMAGE_TOKEN/$CIRCLE_SHA1/g' deployment-manifest.yml
+            kutctl apply -f deployment-manifest.yml
+            kubctl apply -f service-manifest.yml
       
       
       # - run:           
