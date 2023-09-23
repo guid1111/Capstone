@@ -90,8 +90,8 @@ jobs:
             #TODO - need to get the name / tag of the container right...
             cd ~/project
             sed -i 's/IMAGE_TOKEN/$CIRCLE_SHA1/g' deployment-manifest.yml
-            kutctl apply -f deployment-manifest.yml
-            kubctl apply -f service-manifest.yml
+            kubectl apply -f deployment-manifest.yml
+            kubectl apply -f service-manifest.yml
       
       
       # - run:           
@@ -139,7 +139,7 @@ workflows:
           context: aws-dev
           dockerfile: Dockerfile
           path: OptionPricer
-          repo: capstone
+          repo: capstone-pub
           tag: "$CIRCLE_SHA1" 
       - deploy-application:
           requires: [aws-ecr/build-and-push-image]      
