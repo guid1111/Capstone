@@ -139,7 +139,7 @@ workflows:
           context: aws-dev
           dockerfile: Dockerfile
           path: OptionPricer
-          repo: capstone-pub
+          repo: capstone
           tag: "$CIRCLE_SHA1" 
       - deploy-application:
           requires: [aws-ecr/build-and-push-image]      
