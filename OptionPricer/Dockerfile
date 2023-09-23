@@ -13,7 +13,7 @@ RUN dotnet publish -c Release -o bin
 # Runtime image - just use aspnet runtime for container and not full sdk.
 FROM mcr.microsoft.com/dotnet/aspnet:6.0
 WORKDIR /app
-EXPOSE 80
+EXPOSE 8000
 COPY --from=build-environment /app/bin .
 ENTRYPOINT [ "dotnet", "OptionPricer.dll" ]
 
