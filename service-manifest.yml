@@ -6,7 +6,7 @@ metadata:
     app: option-pricer-app
 spec:
   ports:
-  - port: 80
+  - port: 8000
     targetPort: 8000
   selector:
     app: option-pricer-app
