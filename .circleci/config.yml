@@ -3,6 +3,7 @@ version: 2.1
 orbs:
     aws-cli: circleci/aws-cli@4.0
     aws-ecr: circleci/aws-ecr@8.1.3
+    aws-eks: circleci/aws-eks@2.2.0    
     k8s: circleci/kubernetes@1.3.1
 
 jobs:
@@ -23,9 +24,37 @@ jobs:
       #We need an image with eksclt and kubectl commands!  Or we need install those tools.
       #unless 
       - image: amazon/aws-cli
-    steps:
-      - checkout:
-          path: ~/
+
+#- when:
+#condition:
+ #           or:
+  #            - equal:[0, 0]
+   #       steps:
+    #        - run:
+     #           command: echo "conditional"
+
+    steps:     
+      - run:
+          name: Install the eksctl tool
+          command: |
+            if which eksctl > /dev/null; then
+              echo "eksctl is already installed"
+              exit 0
+            fi
+            mkdir -p eksctl_download
+            curl --silent --location --retry 5 "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" \
+            | tar xz -C eksctl_download
+            chmod +x eksctl_download/eksctl
+            SUDO=""
+            if [ $(id -u) -ne 0 ] && which sudo > /dev/null ; then
+              SUDO="sudo"
+            fi
+            $SUDO mv eksctl_download/eksctl /usr/local/bin/
+            rmdir eksctl_download
+
+      # - checkout:
+      #     path: ~/
+      
       # - run:
       #     name: install jq
       #     command: |                  
@@ -34,30 +63,57 @@ jobs:
       #command:|
       #aws eks --region ${AWS_DEFAULT_REGION} update-kubeconfig --name ${CLUSTER_NAME}
       - k8s/install-kubectl
+
       - run:           
           name: Deploy cluster if deploy cluster if required
-          ##EKS NOT FOUND
-          # MAybe just use this:
-          #https://circleci.com/developer/orbs/orb/circleci/aws-eks
-          #you can pass config file...
-          #OR move install kutcl command above create cluster - try this first!!
           command: |
             DEPLOYED_CLUSTER=$(aws eks list-clusters | grep option-pricer-cluster || true)
-            if [ "$DEPLOYED_CLUSTER" != "" ]; then
+            if [ "$DEPLOYED_CLUSTER" != "" ]; then              
               echo "Cluster $DEPLOYED_CLUSTER is already deployed."              
+              #DEPLOYED=1
             else
-              eksctl create cluster -f eksctl_cluster_config.yml
+              echo "Cluster is not deployed."              
+              eksctl
+              #DEPLOYED=0
+              #eksctl create cluster -f eksctl_cluster_config.yml
             fi
       
-      - run:
-          name: Deploy deploy-application
-          command: |
-            #TODO - need to get the name / tag of the container right...
-            sed -i 's/IMAGE_TOKEN/$CIRCLE_SHA1/g' deployment-manifest.yml
-            kutctl apply -f deployment-manifest.yml
-            kubctl apply -f service-manifest.yml
+      
+      # - run:           
+      #     name: Deploy cluster if deploy cluster if required
+      #     ##EKS NOT FOUND
+      #     # MAybe just use this:
+      #     #https://circleci.com/developer/orbs/orb/circleci/aws-eks
+      #     #you can pass config file...
+      #     #OR move install kutcl command above create cluster - try this first!!
+      #     command: |
+      #       DEPLOYED_CLUSTER=$(aws eks list-clusters | grep option-pricer-cluster || true)
+      #       if [ "$DEPLOYED_CLUSTER" != "" ]; then              
+      #         echo "Cluster $DEPLOYED_CLUSTER is already deployed."              
+      #         DEPLOYED=1
+      #       else
+      #         echo "Cluster is not deployed."              
+      #         DEPLOYED=0
+      #         #eksctl create cluster -f eksctl_cluster_config.yml
+      #       fi
+      
+      # when:
+      #   condition:
+      #     or:
+      #       - equal: [DEPLOYED == 0]
+      #   steps:
+      #       - aws-eks/create-cluster:
+      #           config-file: eksctl_cluster_config.yml
+    
+      # - run:
+      #     name: Deploy deploy-application
+      #     command: |
+      #       #TODO - need to get the name / tag of the container right...
+      #       sed -i 's/IMAGE_TOKEN/$CIRCLE_SHA1/g' deployment-manifest.yml
+      #       kutctl apply -f deployment-manifest.yml
+      #       kubctl apply -f service-manifest.yml
 
-            # Smoke test + rollback to previous container version??
+      #       # Smoke test + rollback to previous container version??
 
 workflows:
   default:
