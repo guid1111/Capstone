@@ -21,21 +21,19 @@ lint:
 	
 
 destroy_environment:
-	eksclt delete cluster -f eksctl_cluster_config.yml -disable-nodegroup-eviction
+	eksctl delete cluster -f eksctl_cluster_config.yml -disable-nodegroup-eviction
 
 docker_build:
 	cd OptionPricer
 	docker build -t guid1111/optionpricer .
 
+docker_run_local:
+	#expose port 80 on this host and forward traffic there to port 8000 on the running docker container - so app is available on port 80
+	docker run -p 80:8000 guid1111/optionpricer
+
 docker_publish:
 	#How to do versioning?
 	docker push guid1111/optionpricer
-
-docker_update:
-	#Rolling update given existing deployment?
-	#aws emr describe-cluster --cluster-id option-pricer-cluster
-	# aws emr list-clusters
-	kubectl set image deployments/<deployment> <deployment>=guid1111/optionpricer=guid1111/optionpricer:v2
 
 kubernetes_run:
 	kubectl run capstonedeployment --image=guid1111/optionpricer
