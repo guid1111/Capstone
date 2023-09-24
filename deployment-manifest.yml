@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: my-app-container
-          image: capstone:IMAGE_TOKEN
+          image: 717443921977.dkr.ecr.us-east-1.amazonaws.com/capstone:IMAGE_TOKEN
           ports:
           - name: http
             containerPort: 8000
