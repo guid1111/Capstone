@@ -5,15 +5,7 @@ namespace OptionPricer.Controllers;
 [ApiController]
 [Route("[controller]")]
 public class OptionPriceController : ControllerBase
-{
-    private readonly ILogger<OptionPriceController> _logger;
-
-    public OptionPriceController(ILogger<OptionPriceController> logger)
-    {
-        _logger = logger;
-    }
-
-    
+{    
     //Example GET:  http://localhost:8000/OptionPrice/Tenors
     [Route("Currencies")]
     public IEnumerable<string> GetCurrencies()
@@ -38,6 +30,6 @@ public class OptionPriceController : ControllerBase
     {
         var random = new Random();
 
-        return new FxOptionPrice(random.Next(), random.Next());   
+        return new FxOptionPrice(random.Next(), random.Next() * -1);   
     }
 }

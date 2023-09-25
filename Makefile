@@ -1,12 +1,12 @@
 
 install:
 	# Install the .NET 6.0 SDK - required to build .NET code.
-	./dotnet-install.sh --channel 6.0
+	./Scripts/dotnet-install.sh --channel 6.0
 	# Install hadolint - note if not using Linux a different installation method may be required.
 	wget -O hadolint https://github.com/hadolint/hadolint/releases/download/v1.16.3/hadolint-Linux-x86_64 
 	chmod +x hadolint	
 
-release_build_and_lint:
+build:
 	dotnet build Capstone.sln --configuration Release
     
 test:
@@ -15,12 +15,12 @@ test:
 
 lint:
 	# See local hadolint install instructions:   https://github.com/hadolint/hadolint
-	# This is linter for Dockerfiles
-	hadolint Dockerfile	
+	hadolint OptionPricer/Dockerfile	
 
-	
+create_cluster:
+	eksctl create cluster -f eksctl_cluster_config.yml
 
-destroy_environment:
+destroy_cluster:
 	eksctl delete cluster -f eksctl_cluster_config.yml -disable-nodegroup-eviction
 
 docker_build:
@@ -31,16 +31,11 @@ docker_run_local:
 	#expose port 80 on this host and forward traffic there to port 8000 on the running docker container - so app is available on port 80
 	docker run -p 80:8000 guid1111/optionpricer
 
-docker_publish:
-	#How to do versioning?
+docker_publish:	
 	docker push guid1111/optionpricer
 
 kubernetes_run:
 	kubectl run capstonedeployment --image=guid1111/optionpricer
-
-
-create_cluster:
-	eksctl create cluster -f eksctl_cluster_config.yml
 
 deploy_app_to_cluster:
 	kutctl apply -f deployment-manifest.yml

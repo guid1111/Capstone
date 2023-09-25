@@ -13,26 +13,19 @@ commands:
           name: Install the eksctl tool
           command: |
             yum install -y tar gzip            
-            if which eksctl > /dev/null; then
-              echo "eksctl is already installed"
-              exit 0
-            fi
-            mkdir -p eksctl_download
+            mkdir -p eksctl_temp
             curl --silent --location --retry 5 "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" \
-            | tar xz -C eksctl_download
-            chmod +x eksctl_download/eksctl
+            | tar xz -C eksctl_temp
+            chmod +x eksctl_temp/eksctl
             SUDO=""
             if [ $(id -u) -ne 0 ] && which sudo > /dev/null ; then
               SUDO="sudo"
             fi
-            $SUDO mv eksctl_download/eksctl /usr/local/bin/
-            rmdir eksctl_download      
-
-      
-
+            $SUDO mv eksctl_temp/eksctl /usr/local/bin/
+            rmdir eksctl_temp      
 
 jobs:
-  build-and-test-option-pricer:
+  lint-and-test-option-pricer:
     docker:
       - image: mcr.microsoft.com/dotnet/sdk:6.0
     steps:      
@@ -40,103 +33,64 @@ jobs:
           path: ~/Capstone      
       - run:          
           working_directory: ~/Capstone
-          name: Build and Run tests
+          name: Lint (using StyleCop), build and run unit tests
           command: |                                    
             dotnet test Capstone.sln --configuration Release
 
   deploy-application:    
-    docker:
-      #We need an image with eksclt and kubectl commands!  Or we need install those tools.
-      #unless 
+    docker:      
       - image: amazon/aws-cli
-
-#- when:
-#condition:
- #           or:
-  #            - equal:[0, 0]
-   #       steps:
-    #        - run:
-     #           command: echo "conditional"
-
     steps:  
       - checkout          
       - install_eksctl      
-      - k8s/install-kubectl
-      # - run:
-      #     name: install jq
-      #     command: |                  
-      #       apt install jq              
-      #May need to do this:
-      #command:|
-      #aws eks --region ${AWS_DEFAULT_REGION} update-kubeconfig --name ${CLUSTER_NAME}    
+      - k8s/install-kubectl      
       - run:           
           name: Deploy cluster if deploy cluster if required
           command: |
             cd ~/project
             DEPLOYED_CLUSTER=$(aws eks list-clusters | grep option-pricer-cluster || true)
             if [ "$DEPLOYED_CLUSTER" != "" ]; then              
-              echo "Cluster $DEPLOYED_CLUSTER is already deployed."              
-              #DEPLOYED=1
+              echo "Cluster option-pricer-cluster is already deployed."              
             else
-              echo "Cluster is not deployed."              
-              #eksctl
-              #DEPLOYED=0
+              echo "option-pricer-cluster is not deployed.  Creating Cluster..."                            
               eksctl create cluster -f eksctl_cluster_config.yml
             fi
 
       - run:
           name: Deploy deploy-application
-          command: |
-            #TODO - need to get the name / tag of the container right...
+          command: |            
             cd ~/project
             aws eks --region us-east-1 update-kubeconfig --name option-pricer-cluster
             sed -i 's/IMAGE_TOKEN/'"${CIRCLE_SHA1}"'/g' deployment-manifest.yml
             kubectl apply -f deployment-manifest.yml
             kubectl apply -f service-manifest.yml
-      
-      
-      # - run:           
-      #     name: Deploy cluster if deploy cluster if required
-      #     ##EKS NOT FOUND
-      #     # MAybe just use this:
-      #     #https://circleci.com/developer/orbs/orb/circleci/aws-eks
-      #     #you can pass config file...
-      #     #OR move install kutcl command above create cluster - try this first!!
-      #     command: |
-      #       DEPLOYED_CLUSTER=$(aws eks list-clusters | grep option-pricer-cluster || true)
-      #       if [ "$DEPLOYED_CLUSTER" != "" ]; then              
-      #         echo "Cluster $DEPLOYED_CLUSTER is already deployed."              
-      #         DEPLOYED=1
-      #       else
-      #         echo "Cluster is not deployed."              
-      #         DEPLOYED=0
-      #         #eksctl create cluster -f eksctl_cluster_config.yml
-      #       fi
-      
-      # when:
-      #   condition:
-      #     or:
-      #       - equal: [DEPLOYED == 0]
-      #   steps:
-      #       - aws-eks/create-cluster:
-      #           config-file: eksctl_cluster_config.yml
-    
-      # - run:
-      #     name: Deploy deploy-application
-      #     command: |
-      #       #TODO - need to get the name / tag of the container right...
-      #       sed -i 's/IMAGE_TOKEN/$CIRCLE_SHA1/g' deployment-manifest.yml
-      #       kutctl apply -f deployment-manifest.yml
-      #       kubctl apply -f service-manifest.yml
-
-      #       # Smoke test + rollback to previous container version??
+  
+  smoke-test:
+    docker:      
+      - image: amazon/aws-cli
+    steps:        
+      - install_eksctl      
+      - k8s/install-kubectl      
+      - run:
+          name: Smoke test the application
+          command: |  
+            aws eks --region us-east-1 update-kubeconfig --name option-pricer-cluster
+            LOAD_BALANCER_IP=$(kubectl get services -l component=controller,app=nginx-ingress -o jsonpath="{.items[0].status.loadBalancer.ingress[0].ip}")
+            API_URL="http://"$LOAD_BALANCER_IP"/OptionPrice/Currencies"
+            echo "API_URL = ${API_URL}"
+            if curl -s $API_URL | grep "EURUSD"
+            then              
+              exit 0
+            else
+              exit 1
+            fi
 
 workflows:
   default:
     jobs:  
-      - build-and-test-option-pricer
+      - lint-and-test-option-pricer
       - aws-ecr/build-and-push-image:
-          requires: [build-and-test-option-pricer]
+          requires: [lint-and-test-option-pricer]
           context: aws-dev
           dockerfile: Dockerfile
           path: OptionPricer
@@ -144,3 +98,18 @@ workflows:
           tag: "$CIRCLE_SHA1" 
       - deploy-application:
           requires: [aws-ecr/build-and-push-image]      
+      - smoke-test:
+          requires: [deploy-application]
+
+
+          #TODO - Add smoke test
+          # Get ip:
+  #         kubectl get services \
+  #  --namespace ingress-nginx \
+  #  nginx-ingress-controller \
+  #  --output jsonpath='{.status.loadBalancer.ingress[0].ip}'
+
+  #kubectl get services -l component=controller,app=nginx-ingress -o jsonpath="{.items[0].status.loadBalancer.ingress[0].ip}"
+
+  # And use Curl...
+  # Add a comment to say if we were so inclined we could rollback to a previous versions of the container until one is found that passes the smoketest.
