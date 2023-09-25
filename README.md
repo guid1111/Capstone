@@ -82,8 +82,8 @@ These are provided as evidence to meet the project Rubric:
 | File    | Evidences |
 | -------- | ------- |
 | [*ContainerRegistry.png*](Screenshots/ContainerRegistry.png)   | Screenshot showing Docker images stored in Amazon Web Services Elastic Container Registry.  |
-| [*LintingFail.png*](Screenshots/LintingFail.png)   | Screenshot showing lint failure due to XXX.  |
-| [*LintingSuccess.png*](Screenshots/LintingSuccess.png)   | Screenshot a success with the above problem fixed.  |
+| [*LintingFail.png*](Screenshots/LintingFail.png)   | Screenshot showing lint failure due to unused parameters in code.  |
+| [*LintingSuccess.png*](Screenshots/LintingSuccess.png)   | Screenshot a success with the above problem fixed (rule relaxed).  |
 | [*DockerBuildAndPush.png*](Screenshots/DockerBuildAndPush.png)   | Screenshot the pipeline docker build and push to the respository.  |
 | [*PipelineCluster.png*](Screenshots/PipelineCluster.png)   | Screenshot of the pipeline cluster creation step.  |
 | [*CloudFormationCluster.png*](Screenshots/CloudFormationCluster.png)   | Screenshot of the AWS console showing the result of the pipeline creating the cluster.  |
