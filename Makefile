@@ -1,4 +1,3 @@
-
 install:
 	# Install the .NET 6.0 SDK - required to build .NET code.
 	./Scripts/dotnet-install.sh --channel 6.0
@@ -17,27 +16,27 @@ lint:
 	# See local hadolint install instructions:   https://github.com/hadolint/hadolint
 	hadolint OptionPricer/Dockerfile	
 
-create_cluster:
+create-cluster:
 	eksctl create cluster -f eksctl_cluster_config.yml
 
-destroy_cluster:
-	eksctl delete cluster -f eksctl_cluster_config.yml -disable-nodegroup-eviction
+destroy-cluster:
+	eksctl delete cluster -f eksctl_cluster_config.yml --disable-nodegroup-eviction
 
-docker_build:
+docker-build:
 	cd OptionPricer
 	docker build -t guid1111/optionpricer .
 
-docker_run_local:
+docker-run-local:
 	#expose port 80 on this host and forward traffic there to port 8000 on the running docker container - so app is available on port 80
 	docker run -p 80:8000 guid1111/optionpricer
 
-docker_publish:	
+docker-publish:	
 	docker push guid1111/optionpricer
 
-kubernetes_run:
+kubernetes-run:
 	kubectl run capstonedeployment --image=guid1111/optionpricer
 
-deploy_app_to_cluster:
+deploy-app-to-cluster:
 	kutctl apply -f deployment-manifest.yml
 	kubctl apply -f service-manifest.yml
 
