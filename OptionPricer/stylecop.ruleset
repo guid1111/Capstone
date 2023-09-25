@@ -13,7 +13,7 @@
     <Rule Id="CA1309" Action="None" />
     <Rule Id="CA1822" Action="None" />
     <Rule Id="CA1812" Action="None" />
-    <Rule Id="CA1801" Action="Error" />
+    <Rule Id="CA1801" Action="None" />
   </Rules>
   <Rules AnalyzerId="Microsoft.CodeAnalysis.CSharp.Analyzers" RuleNamespace="Microsoft.CodeAnalysis.CSharp.Analyzers">
     <Rule Id="RS1007" Action="None" />
