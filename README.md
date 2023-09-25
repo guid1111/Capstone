@@ -89,8 +89,8 @@ These are provided as evidence to meet the project Rubric:
 | [*CloudFormationCluster.png*](Screenshots/CloudFormationCluster.png)   | Screenshot of the AWS console showing the result of the pipeline creating the cluster.  |
 | [*KubeCtlPods.png*](Screenshots/KubeCtlPods.png)   | Screenshot of the AWS console showing the result of the pipeline creating the cluster.  |
 | [*KubeCtlServices.png*](Screenshots/KubeCltServices.png)   | Screenshot of the AWS console showing the result of the pipeline creating the cluster.  |
-| [*UnitTest.png*](Screenshots/UnitTest.png)   | Screenshot of the AWS console showing the result of the pipeline creating the cluster.  |
-| [*UnitTest.png*](Screenshots/SmokeTest.png)   | Screenshot of the AWS console showing the result of the pipeline creating the cluster.  |
+| [*UnitTestSuccess.png*](Screenshots/UnitTestSuccess.png)   | Screenshot of the AWS console showing the result of the pipeline creating the cluster.  |
+| [*SmokeTest.png*](Screenshots/SmokeTest.png)   | Screenshot of the AWS console showing the result of the pipeline creating the cluster.  |
 
 
 ---
