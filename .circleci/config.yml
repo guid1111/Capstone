@@ -75,7 +75,7 @@ jobs:
           name: Smoke test the application
           command: |  
             aws eks --region us-east-1 update-kubeconfig --name option-pricer-cluster
-            LOAD_BALANCER_IP=$(kubectl get services -l component=controller,app=nginx-ingress -o jsonpath="{.items[0].status.loadBalancer.ingress[0].ip}")
+            LOAD_BALANCER_IP=$(kubectl get services -o json | grep '"hostname": ' | cut -d: -f2- | tr -d '"')
             API_URL="http://"$LOAD_BALANCER_IP"/OptionPrice/Currencies"
             echo "API_URL = ${API_URL}"
             if curl -s $API_URL | grep "EURUSD"
