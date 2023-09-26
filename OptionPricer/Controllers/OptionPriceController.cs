@@ -10,7 +10,7 @@ public class OptionPriceController : ControllerBase
     [Route("Currencies")]
     public IEnumerable<string> GetCurrencies()
     {
-        return new [] { "EURUSD", "JPYUSD" };
+        return new [] { "EURUSD", "JPYUSD", "USDKRW" };
     }
 
     //Example GET:  http://localhost:8000/OptionPrice/Currencies
