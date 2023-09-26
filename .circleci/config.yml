@@ -100,16 +100,3 @@ workflows:
           requires: [aws-ecr/build-and-push-image]      
       - smoke-test:
           requires: [deploy-application]
-
-
-          #TODO - Add smoke test
-          # Get ip:
-  #         kubectl get services \
-  #  --namespace ingress-nginx \
-  #  nginx-ingress-controller \
-  #  --output jsonpath='{.status.loadBalancer.ingress[0].ip}'
-
-  #kubectl get services -l component=controller,app=nginx-ingress -o jsonpath="{.items[0].status.loadBalancer.ingress[0].ip}"
-
-  # And use Curl...
-  # Add a comment to say if we were so inclined we could rollback to a previous versions of the container until one is found that passes the smoketest.
