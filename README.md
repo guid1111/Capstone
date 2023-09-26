@@ -81,17 +81,29 @@ These are provided as evidence to meet the project Rubric:
 
 | File    | Evidences |
 | -------- | ------- |
-| [*ContainerRegistry.png*](Screenshots/ContainerRegistry.png)   | Screenshot showing Docker images stored in Amazon Web Services Elastic Container Registry.  |
-| [*LintingFail.png*](Screenshots/LintingFail.png)   | Screenshot showing lint failure due to unused parameters in code.  |
+| [*LintingFailure.png*](Screenshots/LintingFailure.png)   | Screenshot showing lint failure due to unused parameters in code.  |
 | [*LintingSuccess.png*](Screenshots/LintingSuccess.png)   | Screenshot a success with the above problem fixed (rule relaxed).  |
-| [*DockerBuildAndPush.png*](Screenshots/DockerBuildAndPush.png)   | Screenshot the pipeline docker build and push to the respository.  |
-| [*PipelineCluster.png*](Screenshots/PipelineCluster.png)   | Screenshot of the pipeline cluster creation step.  |
-| [*CloudFormationCluster.png*](Screenshots/CloudFormationCluster.png)   | Screenshot of the AWS console showing the result of the pipeline creating the cluster.  |
-| [*KubeCtlPods.png*](Screenshots/KubeCtlPods.png)   | Screenshot of the AWS console showing the result of the pipeline creating the cluster.  |
-| [*KubeCtlServices.png*](Screenshots/KubeCltServices.png)   | Screenshot of the AWS console showing the result of the pipeline creating the cluster.  |
 | [*UnitTestSuccess.png*](Screenshots/UnitTestSuccess.png)   | Screenshot of the AWS console showing the result of the pipeline creating the cluster.  |
-| [*SmokeTest.png*](Screenshots/SmokeTest.png)   | Screenshot of the AWS console showing the result of the pipeline creating the cluster.  |
-
+| [*DockerBuildAndPush.png*](Screenshots/DockerBuildAndPush.png)   | Screenshot the pipeline docker build and push to the respository.  |
+| [*ContainerRegistry.png*](Screenshots/ContainerRegistry.png)   | Screenshot showing Docker images stored in Amazon Web Services Elastic Container Registry.  |
+| [*CloudFormationClusterCircleCi1.png*](Screenshots/CloudFormationClusterCircleCi1.png)   | Cloud Formation as seen from Circle CI.  |
+| [*CloudFormationClusterCircleCi2.png*](Screenshots/CloudFormationClusterCircleCi2.png)   | Cloud Formation as seen from Circle CI.  |
+| [*CloudFormationClusterAws.png*](Screenshots/CloudFormationClusterAws.png)   | Cloud Formation Cluster as seen from AWS console.  |
+| [*CloudFormationNodeGroupAws.png*](Screenshots/CloudFormationNodeGroupAws.png)   | Cloud Formation Node Group as seen from AWS console.  |
+| [*CloudFormationStacks.png*](Screenshots/CloudFormationStacks.png)   | Cloud Formation Stacks as seen from AWS console.  |
+| [*Ec2InstancesRunning.png*](Screenshots/Ec2InstancesRunning.png)   | EC2 instances running in AWS console.  |
+| [*ElasticIp.png*](Screenshots/ElasticIp.png)   | Elastic IP resource in AWS console.  |
+| [*LoadBalancer.png*](Screenshots/LoadBalancer.png)   | Load Balancer resource in AWS console.  |
+| [*SecurityGroups.png*](Screenshots/SecurityGroups.png)   | Security Groups resource in AWS console.  |
+| [*SmokeTestSuccess.png*](Screenshots/SmokeTestSuccess.png)   | Screenshot of smoketest pipeline step showing accessing URL in the API and the response from the API.  |
+| [*KubectlServicesIpAndPortForwarding.png*](Screenshots/KubectlServicesIpAndPortForwarding.png)   | Screenshot showing the external IP of the service.  |
+| [*KubeCtlGetNodes.png*](Screenshots/KubeCtlGetNodes.png)   | Screenshot showing the 2 running Kubenetes Nodes.  |
+| [*KubectlPods.png*](Screenshots/KubectlPods.png)   | Screeshot showing the 3 running pods.  |
+| [*KubectlContainerImagesRunning.png*](Screenshots/KubectlContainerImagesRunning.png)   | Screenshots detailing the running images.  |
+| [*RollingDeploymentEvidence.png*](Screenshots/RollingDeploymentEvidence.png)   | Evidence of rolling deployment as the pipeline runs - the last line showing the container was updated.  |
+| [*ApplicationWorking.png*](Screenshots/ApplicationWorking.png)   | Screenshot Curl utility used to exercise various endpoints in the application.  |
+| [*CircleCiPipelineDetail.png*](Screenshots/CircleCiPipelineDetail.png)   | Detail of the circle CI pipeline.  |
+| [*CircleCiPipelineRuns.png*](Screenshots/CircleCiPipelineRuns.png)   | Green circle CI pipeline.  |
 
 ---
 
