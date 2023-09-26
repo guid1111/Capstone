@@ -15,7 +15,7 @@ public class UnitTest1
         var currencies = optionPriceController.GetCurrencies();
 
         Assert.IsNotNull(currencies);
-        Assert.AreEqual(currencies.Count(), 2);        
+        Assert.AreEqual(currencies.Count(), 3);        
     }
 
     [TestMethod]
